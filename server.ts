@@ -31,18 +31,39 @@ import {
 
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3050",
-  process.env.FRONTEND_URL,
-].filter(Boolean) as string[];
-
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or Postman)
+      if (!origin) return callback(null, true);
+      
+      const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+      const isFrontendUrl = process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL;
+      
+      if (isLocalhost || isFrontendUrl) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
+// Ensure MongoDB is connected before handling any route requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection middleware error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
 
 // ==========================================
 // BODY PARSER

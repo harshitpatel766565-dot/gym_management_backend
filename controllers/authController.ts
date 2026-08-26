@@ -51,6 +51,27 @@ export const register = async (
       trainer: null,
     });
 
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      res.status(500).json({
+        success: false,
+        message: "JWT_SECRET is missing",
+      });
+      return;
+    }
+
+    const accessToken = jwt.sign(
+      {
+        id: user._id.toString(),
+        role: user.role,
+      },
+      secret,
+      {
+        expiresIn: "7d",
+      }
+    );
+
     res.status(201).json({
       success: true,
       message: "Registration successful",
@@ -64,6 +85,10 @@ export const register = async (
           createdAt: user.createdAt?.toISOString() || "",
           updatedAt: user.updatedAt?.toISOString() || "",
           isActive: true,
+        },
+        tokens: {
+          access: accessToken,
+          refresh: accessToken,
         },
       },
     });
