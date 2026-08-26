@@ -4,6 +4,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 import MembershipPlan from "../models/MembershipPlan";
 import Membership from "../models/Membership";
 import User from "../models/User";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // GET MEMBERSHIP PLANS (PUBLIC)
@@ -156,7 +157,7 @@ export const getUserMembership = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId } = req.params;
+    const userId = getParam(req.params, "userId");
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       res.status(400).json({ success: false, message: "Invalid user ID" });

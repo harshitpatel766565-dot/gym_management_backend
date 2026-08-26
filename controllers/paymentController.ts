@@ -5,6 +5,7 @@ import Payment from "../models/Payment";
 import Membership from "../models/Membership";
 import MembershipPlan from "../models/MembershipPlan";
 import User from "../models/User";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // CREATE RAZORPAY ORDER (MOCK/SIMULATION ON BACKEND)
@@ -168,7 +169,7 @@ export const getUserTransactions = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId } = req.params;
+    const userId = getParam(req.params, "userId");
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       res.status(400).json({ success: false, message: "Invalid user ID" });

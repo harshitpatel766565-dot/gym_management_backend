@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Program from "../models/Program";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // GET ALL PROGRAMS
@@ -33,7 +34,7 @@ export const getProgramById = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = getParam(req.params, "id");
     
     let program;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {

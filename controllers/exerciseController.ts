@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
-import Exercise from "../models/Exercise";
+import Exercise, { IExercise } from "../models/Exercise";
+import { getParam } from "../utils/param";
+import mongoose from "mongoose";
 
 export const getExercises = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -7,7 +9,7 @@ export const getExercises = async (req: Request, res: Response): Promise<void> =
 
     if (exercises.length === 0) {
       // Auto seed some default exercises
-      const defaults = [
+      const defaults: Omit<IExercise, keyof mongoose.Document>[] = [
         {
           name: "Barbell Bench Press",
           targetMuscle: "Chest",
@@ -79,7 +81,7 @@ export const getExercises = async (req: Request, res: Response): Promise<void> =
 
 export const getExerciseById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = getParam(req.params, "id");
     const e = await Exercise.findById(id);
     if (!e) {
       res.status(404).json({ success: false, message: "Exercise not found" });
@@ -141,7 +143,7 @@ export const createExercise = async (req: Request, res: Response): Promise<void>
 
 export const deleteExercise = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = getParam(req.params, "id");
     const e = await Exercise.findByIdAndDelete(id);
     if (!e) {
       res.status(404).json({ success: false, message: "Exercise not found" });

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { AuthRequest } from "../middleware/authMiddleware";
 import Product from "../models/Product";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // GET ALL PRODUCTS
@@ -94,7 +95,7 @@ export const getProductById = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = getParam(req.params, "id");
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ success: false, message: "Invalid product ID" });
@@ -180,7 +181,7 @@ export const updateProduct = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = getParam(req.params, "id");
     const updateData = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -217,7 +218,7 @@ export const deleteProduct = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = getParam(req.params, "id");
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ success: false, message: "Invalid product ID" });

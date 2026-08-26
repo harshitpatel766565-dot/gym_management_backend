@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { AuthRequest } from "../middleware/authMiddleware";
 import Progress from "../models/Progress";
 import User from "../models/User";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // GET MEMBER PROGRESS LOGS
@@ -12,7 +13,7 @@ export const getProgressLogs = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId } = req.params;
+    const userId = getParam(req.params, "userId");
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       res.status(400).json({ success: false, message: "Invalid user ID" });
@@ -58,7 +59,7 @@ export const addProgressLog = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId } = req.params;
+    const userId = getParam(req.params, "userId");
     const {
       weight,
       bodyFatPercentage,
@@ -155,7 +156,7 @@ export const getTrainerMemberProgress = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { memberId } = req.params;
+    const memberId = getParam(req.params, "memberId");
 
     if (!trainerId) {
       res.status(401).json({ success: false, message: "Authentication required" });

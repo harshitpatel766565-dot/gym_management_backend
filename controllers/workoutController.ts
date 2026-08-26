@@ -4,6 +4,7 @@ import { Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware";
 import User from "../models/User";
 import Workout from "../models/Workout";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // CREATE WORKOUT
@@ -148,7 +149,7 @@ export const getMemberWorkouts = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { memberId } = req.params;
+    const memberId = getParam(req.params, "memberId");
 
     if (!trainerId) {
       res.status(401).json({
@@ -210,7 +211,7 @@ export const updateWorkout = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { workoutId } = req.params;
+    const workoutId = getParam(req.params, "workoutId");
 
     if (!trainerId) {
       res.status(401).json({
@@ -283,7 +284,7 @@ export const deleteWorkout = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { workoutId } = req.params;
+    const workoutId = getParam(req.params, "workoutId");
 
     if (!trainerId) {
       res.status(401).json({

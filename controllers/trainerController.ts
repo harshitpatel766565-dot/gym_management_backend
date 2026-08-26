@@ -6,6 +6,7 @@ import User from "../models/User";
 import Booking from "../models/Booking";
 import Progress from "../models/Progress";
 import Attendance from "../models/Attendance";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // TRAINER DASHBOARD
@@ -201,7 +202,7 @@ export const assignMemberToTrainer = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { memberId } = req.params;
+    const memberId = getParam(req.params, "memberId");
 
     if (!trainerId) {
       res.status(401).json({
@@ -292,7 +293,7 @@ export const removeMemberFromTrainer = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { memberId } = req.params;
+    const memberId = getParam(req.params, "memberId");
 
     if (!trainerId) {
       res.status(401).json({
@@ -446,7 +447,7 @@ export const getMemberProfile = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { memberId } = req.params;
+    const memberId = getParam(req.params, "memberId");
 
     if (!trainerId) {
       res.status(401).json({

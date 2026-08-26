@@ -2,6 +2,7 @@ import { Response } from "express";
 import mongoose from "mongoose";
 import { AuthRequest } from "../middleware/authMiddleware";
 import User from "../models/User";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // UPDATE USER PROFILE
@@ -11,7 +12,7 @@ export const updateProfile = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId } = req.params;
+    const userId = getParam(req.params, "userId");
     const profileData = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {

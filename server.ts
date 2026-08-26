@@ -31,16 +31,15 @@ import {
 
 const app = express();
 
-// ==========================================
-// CORS
-// ==========================================
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3050",
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3050",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -66,10 +65,9 @@ app.use(
 // UPLOADS DIRECTORY
 // ==========================================
 
-const uploadsDir = path.join(
-  __dirname,
-  "uploads"
-);
+const uploadsDir = process.env.VERCEL
+  ? "/tmp"
+  : path.join(__dirname, "uploads");
 
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, {
@@ -329,11 +327,11 @@ app.get(
 // SERVER
 // ==========================================
 
-const PORT =
-  process.env.PORT || 5000;
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running on http://localhost:${PORT}`
-  );
-});
+export default app;

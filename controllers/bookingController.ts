@@ -4,6 +4,7 @@ import { Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware";
 import User from "../models/User";
 import Booking from "../models/Booking";
+import { getParam } from "../utils/param";
 
 // ==========================================
 // CREATE BOOKING
@@ -152,7 +153,7 @@ export const updateBookingStatus = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { bookingId } = req.params;
+    const bookingId = getParam(req.params, "bookingId");
     const { status } = req.body;
 
     if (!trainerId) {
@@ -238,7 +239,7 @@ export const updateBooking = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { bookingId } = req.params;
+    const bookingId = getParam(req.params, "bookingId");
 
     if (!trainerId) {
       res.status(401).json({
@@ -318,7 +319,7 @@ export const deleteBooking = async (
 ): Promise<void> => {
   try {
     const trainerId = req.user?.id;
-    const { bookingId } = req.params;
+    const bookingId = getParam(req.params, "bookingId");
 
     if (!trainerId) {
       res.status(401).json({
@@ -374,7 +375,7 @@ export const getUserBookings = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { userId } = req.params;
+    const userId = getParam(req.params, "userId");
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       res.status(400).json({ success: false, message: "Invalid user ID" });
@@ -508,7 +509,7 @@ export const cancelMemberBooking = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { bookingId } = req.params;
+    const bookingId = getParam(req.params, "bookingId");
 
     if (!mongoose.Types.ObjectId.isValid(bookingId)) {
       res.status(400).json({ success: false, message: "Invalid booking ID" });
