@@ -32,17 +32,22 @@ const app = express();
 const productionFrontend =
   "https://gym-management-frontend-three.vercel.app";
 
-const configuredFrontend =
-  process.env.FRONTEND_URL?.trim().replace(/\/$/, "");
+const configuredFrontend = process.env.FRONTEND_URL
+  ?.trim()
+  .replace(/\/$/, "");
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001",
-  productionFrontend,
-  configuredFrontend,
-].filter(Boolean) as string[];
+const allowedOrigins = Array.from(
+  new Set(
+    [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:3001",
+      productionFrontend,
+      configuredFrontend,
+    ].filter(Boolean) as string[]
+  )
+);
 
 console.log("Allowed CORS origins:", allowedOrigins);
 
@@ -96,8 +101,14 @@ app.use(
   })
 );
 
-// Explicit OPTIONS handling
-app.options("*", cors());
+// IMPORTANT:
+// Do NOT use app.options("*", cors())
+// because newer Express/router versions reject "*"
+// and cause Vercel FUNCTION_INVOCATION_FAILED.
+
+// =====================================================
+// JSON BODY PARSER
+// =====================================================
 
 app.use(express.json());
 
@@ -107,7 +118,7 @@ app.use(express.json());
 
 let dbConnectionPromise: Promise<void> | null = null;
 
-const ensureDatabaseConnection = async () => {
+const ensureDatabaseConnection = async (): Promise<void> => {
   if (!dbConnectionPromise) {
     dbConnectionPromise = connectDB().catch((error) => {
       dbConnectionPromise = null;
@@ -118,13 +129,19 @@ const ensureDatabaseConnection = async () => {
   await dbConnectionPromise;
 };
 
-// Make sure MongoDB is connected before API requests
+// =====================================================
+// DATABASE MIDDLEWARE
+// =====================================================
+
 app.use(async (_req, res, next) => {
   try {
     await ensureDatabaseConnection();
     next();
   } catch (error) {
-    console.error("❌ Database middleware error:", error);
+    console.error(
+      "❌ Database middleware error:",
+      error
+    );
 
     res.status(503).json({
       success: false,
@@ -134,33 +151,74 @@ app.use(async (_req, res, next) => {
 });
 
 // =====================================================
-// YOUR ROUTES
+// API ROUTES
 // =====================================================
 
 app.use("/api/admin", adminRoutes);
+
 app.use("/attendance", attendanceRoutes);
+
 app.use("/api/auth", authRoutes);
+
 app.use("/api/trainer/bookings", bookingRoutes);
+
 app.use("/api/contact", contactRoutes);
+
 app.use("/workouts/exercises", exerciseRoutes);
+
 app.use("/api/homepage", homepageRoutes);
+
 app.use("/memberships", membershipRoutes);
+
 app.use("/api/notifications", notificationRoutes);
+
 app.use("/payments", paymentRoutes);
+
 app.use("/api/products", productRoutes);
+
 app.use("/api/programs", programRoutes);
+
 app.use("/api/trainer", trainerRoutes);
+
 app.use("/bookings", userBookingRoutes);
+
 app.use("/users", userRoutes);
+
 app.use("/api/trainer/workouts", workoutRoutes);
 
 // =====================================================
+// HEALTH CHECK
+// =====================================================
 
-// Local Server Port Listening
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "IronForge Fitness Backend is running 🚀",
+  });
+});
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "API is healthy",
+    database:
+      dbConnectionPromise !== null
+        ? "connection initialized"
+        : "not connected",
+  });
+});
+
+// =====================================================
+// LOCAL SERVER
+// =====================================================
+
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
+
   app.listen(PORT, () => {
-    console.log(`Server is running locally on port ${PORT} 🚀`);
+    console.log(
+      `Server is running locally on port ${PORT} 🚀`
+    );
   });
 }
 
