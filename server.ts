@@ -48,6 +48,7 @@ const allowedOrigins = Array.from(
       "http://localhost:3001",
       "http://127.0.0.1:3000",
       "http://127.0.0.1:3001",
+      "https://gym-management-frontend-three.vercel.app",
       productionFrontend,
       configuredFrontend,
     ].filter(Boolean) as string[]

@@ -595,7 +595,7 @@ export const makeAdmin = async (
           <p>📧 <strong>Email:</strong> ${adminEmail}</p>
           <p>🔑 <strong>Password:</strong> admin123</p>
         </div>
-        <p style="margin-top: 30px;"><a href="${process.env.FRONTEND_URL || "http://localhost:3000"}/login" style="background: #ff4500; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Go to Login Page</a></p>
+        <p style="margin-top: 30px;"><a href="${process.env.FRONTEND_URL || "https://gym-management-frontend-three.vercel.app/"}/login" style="background: #ff4500; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Go to Login Page</a></p>
       </div>
     `);
   } catch (error) {
