@@ -1,29 +1,22 @@
 import nodemailer from "nodemailer";
 
-const gmailUser = process.env.GMAIL_USER;
-const gmailPassword = process.env.GMAIL_APP_PASSWORD;
-
-console.log("GMAIL_USER:", gmailUser);
-console.log(
-  "GMAIL_APP_PASSWORD exists:",
-  !!gmailPassword
-);
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: gmailUser,
-    pass: gmailPassword,
-  },
-});
-
 export const sendPasswordResetOtp = async (
   email: string,
   otp: string
 ): Promise<void> => {
+  // Read environment variables when the function is actually called
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+
+  console.log("GMAIL_USER:", gmailUser);
+  console.log(
+    "GMAIL_APP_PASSWORD exists:",
+    !!gmailPassword
+  );
+
   if (!gmailUser || !gmailPassword) {
     throw new Error(
-      "Gmail credentials are missing in .env"
+      "Gmail credentials are missing in environment variables"
     );
   }
 
@@ -31,6 +24,14 @@ export const sendPasswordResetOtp = async (
     "Sending password reset OTP to:",
     email
   );
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: gmailUser,
+      pass: gmailPassword,
+    },
+  });
 
   await transporter.sendMail({
     from: `"IRONFORGE Gym" <${gmailUser}>`,

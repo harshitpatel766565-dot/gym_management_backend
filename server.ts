@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import connectDB from "./config/db";
 
 // Route imports
@@ -20,8 +23,6 @@ import trainerRoutes from "./routes/trainerRoutes";
 import userBookingRoutes from "./routes/userBookingRoutes";
 import userRoutes from "./routes/userRoutes";
 import workoutRoutes from "./routes/workoutRoutes";
-
-dotenv.config();
 
 const app = express();
 
@@ -54,13 +55,12 @@ console.log("Allowed CORS origins:", allowedOrigins);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Requests without Origin
-      // Example: Postman / server-to-server
+      // Postman / server-to-server
       if (!origin) {
         return callback(null, true);
       }
 
-      // Allow all localhost ports during development
+      // Allow all localhost ports
       if (
         origin.startsWith("http://localhost:") ||
         origin.startsWith("http://127.0.0.1:")
@@ -100,11 +100,6 @@ app.use(
     optionsSuccessStatus: 204,
   })
 );
-
-// IMPORTANT:
-// Do NOT use app.options("*", cors())
-// because newer Express/router versions reject "*"
-// and cause Vercel FUNCTION_INVOCATION_FAILED.
 
 // =====================================================
 // JSON BODY PARSER
@@ -155,35 +150,20 @@ app.use(async (_req, res, next) => {
 // =====================================================
 
 app.use("/api/admin", adminRoutes);
-
 app.use("/attendance", attendanceRoutes);
-
 app.use("/api/auth", authRoutes);
-
 app.use("/api/trainer/bookings", bookingRoutes);
-
 app.use("/api/contact", contactRoutes);
-
 app.use("/workouts/exercises", exerciseRoutes);
-
 app.use("/api/homepage", homepageRoutes);
-
 app.use("/memberships", membershipRoutes);
-
 app.use("/api/notifications", notificationRoutes);
-
 app.use("/payments", paymentRoutes);
-
 app.use("/api/products", productRoutes);
-
 app.use("/api/programs", programRoutes);
-
 app.use("/api/trainer", trainerRoutes);
-
 app.use("/bookings", userBookingRoutes);
-
 app.use("/users", userRoutes);
-
 app.use("/api/trainer/workouts", workoutRoutes);
 
 // =====================================================
