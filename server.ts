@@ -4,9 +4,13 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
+import mongoose from "mongoose";
 import connectDB from "./config/db";
 
-// Route imports
+// =====================================================
+// ROUTE IMPORTS
+// =====================================================
+
 import adminRoutes from "./routes/adminRoutes";
 import attendanceRoutes from "./routes/attendanceRoutes";
 import authRoutes from "./routes/authRoutes";
@@ -27,7 +31,7 @@ import workoutRoutes from "./routes/workoutRoutes";
 const app = express();
 
 // =====================================================
-// CORS CONFIGURATION
+// CORS
 // =====================================================
 
 const productionFrontend =
@@ -55,12 +59,10 @@ console.log("Allowed CORS origins:", allowedOrigins);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Postman / server-to-server
       if (!origin) {
         return callback(null, true);
       }
 
-      // Allow all localhost ports
       if (
         origin.startsWith("http://localhost:") ||
         origin.startsWith("http://127.0.0.1:")
@@ -68,7 +70,6 @@ app.use(
         return callback(null, true);
       }
 
-      // Allow production frontend
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -102,27 +103,10 @@ app.use(
 );
 
 // =====================================================
-// JSON BODY PARSER
+// JSON
 // =====================================================
 
 app.use(express.json());
-
-// =====================================================
-// DATABASE CONNECTION
-// =====================================================
-
-let dbConnectionPromise: Promise<void> | null = null;
-
-const ensureDatabaseConnection = async (): Promise<void> => {
-  if (!dbConnectionPromise) {
-    dbConnectionPromise = connectDB().catch((error) => {
-      dbConnectionPromise = null;
-      throw error;
-    });
-  }
-
-  await dbConnectionPromise;
-};
 
 // =====================================================
 // DATABASE MIDDLEWARE
@@ -130,40 +114,69 @@ const ensureDatabaseConnection = async (): Promise<void> => {
 
 app.use(async (_req, res, next) => {
   try {
-    await ensureDatabaseConnection();
-    next();
-  } catch (error) {
-    console.error(
-      "❌ Database middleware error:",
-      error
+    console.log("📡 Request:", _req.method, _req.path);
+    console.log(
+      "MongoDB readyState before request:",
+      mongoose.connection.readyState
     );
+
+    // 1 = connected
+    if (mongoose.connection.readyState !== 1) {
+      console.log("🔄 MongoDB not connected. Connecting...");
+      await connectDB();
+    }
+
+    console.log("✅ MongoDB ready");
+    next();
+  } catch (error: any) {
+    console.error("❌ Database connection error:");
+    console.error(error?.message || error);
 
     res.status(503).json({
       success: false,
       message: "Database connection unavailable",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error?.message
+          : undefined,
     });
   }
 });
 
 // =====================================================
-// API ROUTES
+// ROUTES
 // =====================================================
 
 app.use("/api/admin", adminRoutes);
+
 app.use("/attendance", attendanceRoutes);
+
 app.use("/api/auth", authRoutes);
+
 app.use("/api/trainer/bookings", bookingRoutes);
+
 app.use("/api/contact", contactRoutes);
+
 app.use("/workouts/exercises", exerciseRoutes);
+
 app.use("/api/homepage", homepageRoutes);
+
 app.use("/memberships", membershipRoutes);
+
 app.use("/api/notifications", notificationRoutes);
+
 app.use("/payments", paymentRoutes);
+
 app.use("/api/products", productRoutes);
+
 app.use("/api/programs", programRoutes);
+
 app.use("/api/trainer", trainerRoutes);
+
 app.use("/bookings", userBookingRoutes);
+
 app.use("/users", userRoutes);
+
 app.use("/api/trainer/workouts", workoutRoutes);
 
 // =====================================================
@@ -182,8 +195,8 @@ app.get("/api/health", (_req, res) => {
     success: true,
     message: "API is healthy",
     database:
-      dbConnectionPromise !== null
-        ? "connection initialized"
+      mongoose.connection.readyState === 1
+        ? "connected"
         : "not connected",
   });
 });
@@ -195,11 +208,28 @@ app.get("/api/health", (_req, res) => {
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
 
-  app.listen(PORT, () => {
-    console.log(
-      `Server is running locally on port ${PORT} 🚀`
-    );
-  });
+  connectDB()
+    .then(() => {
+      console.log("MongoDB startup connection successful ✅");
+
+      app.listen(PORT, () => {
+        console.log(
+          `Server is running locally on port ${PORT} 🚀`
+        );
+      });
+    })
+    .catch((error) => {
+      console.error(
+        "❌ MongoDB startup connection failed:",
+        error?.message || error
+      );
+
+      process.exit(1);
+    });
 }
+
+// =====================================================
+// EXPORT
+// =====================================================
 
 export default app;
